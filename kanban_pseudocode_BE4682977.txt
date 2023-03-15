@@ -1,0 +1,98 @@
+PROGRAM KanbanBoard
+
+CLASS "Task"
+    STATIC "index" with unsigned integer
+    "title" with string
+    "description" with string
+    "status" with enum("to-do", "in-progress", "done")
+
+    PROCEDURE NEW(task_title, task_description)
+        "index" = "index" + 1
+        "title" = "task_title"
+        "description" = "task_description"
+        "status" = "to-do"
+    ENDPROCEDURE
+ENDCLASS
+
+PROCEDURE AddNewTask()
+    READ AND WRITE "task_title" with string
+    READ AND WRITE "task_description" with string
+    
+    STORE "task" with NEW Task("task_title", "task_description")
+    APPEND "tasks" with "task"
+ENDPROCEDURE
+
+FUNCTION ValidateTaskIndex("task_index")
+    IF "task_index" LESS THAN 0 OR "task_index" GREATER THAN LENGTH OF "tasks"
+        PRINT "Invalid Index"
+        RETURN FALSE
+    ENDIF
+    RETURN TRUE
+ENDFUNCTION
+
+FUNCTION ValidateTaskStatus("task_status")
+    IF "task_status" IS NOT EQUAL "to-do" OR "in-progress" OR "done"
+        PRINT "Invalid Status"
+        RETURN FALSE
+    ENDIF
+    RETURN TRUE
+ENDFUNCTION
+
+PROCEDURE MoveTask()
+    READ AND WRITE "task_index" with unsigned integer
+    READ AND WRITE "task_status" with enum("to-do", "in-progress", "done")
+
+    IF ValidateTaskIndex("task_index") AND ValidateTaskStatus("task_status")
+        "status" OF "tasks" AT "task_index" = "task_status"
+    ELSE
+        PRINT "Invalid Choice"
+    ENDIF
+ENDPROCEDURE
+
+PROCEDURE RemoveTask()
+    READ AND WRITE "task_index" with unsigned integer
+    IF ValidateTaskIndex("task_index") AND "task_index" LESS THAN LENGTH OF "tasks"
+        REMOVE "tasks" AT "task_index"
+    ENDIF
+ENDPROCEDURE
+
+PROCEDURE DisplayBoard("tasks")
+    PRINT "To Do: "
+    FOR "task" in "tasks" WHERE "status" of "task" IS EQUAL "to-do"
+        PRINT "Title: "title" OF "task" Description: "description" OF "task"
+    ENDFOR
+    
+    PRINT "In Progress: "
+    FOR "task" in "tasks" WHERE "status" of "task" IS EQUAL "in-progress"
+        PRINT "Title: "title" OF "task" Description: "description" OF "task"
+    ENDFOR
+    
+    PRINT "Done: "
+    FOR "task" in "tasks" WHERE "status" of "task" IS EQUAL "done"
+        PRINT "Title: "title" OF "task" Description: "description" OF "task"
+    ENDFOR
+ENDPROCEDURE
+
+PROCEDURE Main()
+    READ AND WRITE "action" with enum("add", "move", "remove", "exit")
+    READ AND WRITE "tasks" with array of "Task"
+
+    DisplayBoard("tasks")
+
+    WHILE "action" IS NOT EQUAL "exit"
+        SWITCH "action"
+            CASE "add"
+                AddNewTask()
+            CASE "move"
+                MoveTask()
+            CASE "remove"
+                RemoveTask()
+            CASE "exit"
+                BREAK
+            DEFAULT
+                PRINT "Invalid Choice"
+        DisplayBoard("tasks")
+    ENDWHILE
+ENDPROCEDURE
+
+CALL Main()
